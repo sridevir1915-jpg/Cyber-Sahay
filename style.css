@@ -136,3 +136,5 @@ textarea { min-height: 150px; resize: vertical; }
 
 @media (min-width: 620px) { main { padding-top: 48px; }.card { padding: 36px; }.choice { padding: 25px 28px; } }
 @media (max-width: 430px) { .site-header { padding: 16px; }.site-header::after { top: 73px; }.brand { gap: 8px; font-size: 1.2rem; }.brand-mark { width: 30px; height: 34px; }.header-link { padding: 6px 8px; font-size: .75rem; } main { padding-right: 16px; padding-left: 16px; } }
+
+.login-form { display: grid; gap: 12px; max-width: 560px; }.login-form label:not(:first-child) { margin-top: 10px; }.login-form .button { margin-top: 10px; }.demo-credentials { max-width: 560px; margin-top: 20px; padding: 18px 20px; border: 1px solid #cbd8ea; border-radius: 10px; background: var(--notice-bg); color: #294564; }.demo-credentials p { margin: 5px 0 0; }.prototype-note, .track-link { color: var(--muted); font-size: .92rem; }.track-link { margin-top: 24px; }.track-link a { color: var(--navy); font-weight: 800; }
