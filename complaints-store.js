@@ -2,6 +2,7 @@
 (function () {
   const accountsKey = 'cyberSahayAccounts';
   const sessionKey = 'cyberSahaySession';
+  const pendingComplaintsKey = 'cyberSahayPendingComplaints';
   const accounts = {
     '9876543210': {
       mobile: '9876543210', pin: '1234', name: 'Aarav',
@@ -27,6 +28,16 @@
   const prefixFor = (type) => ({ financial_fraud: 'CS', harassment: 'NCH', other: 'NCO' })[type] || 'CS';
   const currentMobile = () => localStorage.getItem(sessionKey);
   const currentAccount = () => readAccounts()[currentMobile()] || null;
+  const readPendingComplaints = () => JSON.parse(localStorage.getItem(pendingComplaintsKey) || '[]');
+  const claimPendingComplaints = (mobile) => {
+    const pendingComplaints = readPendingComplaints();
+    if (!pendingComplaints.length) return;
+
+    const allAccounts = readAccounts();
+    allAccounts[mobile].complaints.unshift(...pendingComplaints);
+    writeAccounts(allAccounts);
+    localStorage.removeItem(pendingComplaintsKey);
+  };
 
   window.CyberSahayComplaints = {
     get() { return currentAccount()?.complaints || []; },
@@ -35,15 +46,19 @@
       const accountList = Object.values(readAccounts());
       const account = accountList.find((item) => item.mobile === identifier || item.complaints.some((complaint) => complaint.id.toLowerCase() === identifier.toLowerCase()));
       if (!account || account.pin !== pin) return false;
+      claimPendingComplaints(account.mobile);
       localStorage.setItem(sessionKey, account.mobile);
       return true;
     },
     logout() { localStorage.removeItem(sessionKey); },
     post(complaint) {
       const account = currentAccount();
-      if (!account) return null;
       const id = `${prefixFor(complaint.type)}-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
       const saved = { ...complaint, id, status: 0, filed: 'today' };
+      if (!account) {
+        localStorage.setItem(pendingComplaintsKey, JSON.stringify([...readPendingComplaints(), saved]));
+        return saved;
+      }
       const allAccounts = readAccounts();
       allAccounts[account.mobile].complaints.unshift(saved);
       writeAccounts(allAccounts);

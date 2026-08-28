@@ -32,7 +32,6 @@ if (form && !form.closest('[data-report-flow]')) {
       save();
       if (current === fields.length - 1) {
         const report = JSON.parse(localStorage.getItem('cyberSahayReport'));
-        if (!CyberSahayComplaints.getAccount()) { window.location.href = 'login.html'; return; }
         const saved = CyberSahayComplaints.post({ type: 'financial_fraud', label: 'Financial fraud', ...report });
         localStorage.setItem('cyberSahayReport', JSON.stringify({ ...saved, complaintId: saved.id }));
         window.location.href = 'confirmation.html';
@@ -76,7 +75,6 @@ if (flow) {
     if (event.target.matches('[data-submit]')) {
       if (document.getElementById('otp').value !== '123456') { document.getElementById('otp-error').hidden = false; return; }
       const data = Object.fromEntries(new FormData(form));
-      if (!CyberSahayComplaints.getAccount()) { window.location.href = '../../login.html'; return; }
       const saved = CyberSahayComplaints.post({ type, label: data.harassmentKind || data.issueType, ...data });
       localStorage.setItem('cyberSahayReport', JSON.stringify({ ...saved, complaintId: saved.id }));
       window.location.href = '../../confirmation.html';
@@ -100,7 +98,7 @@ if (loginForm) {
 
 document.querySelectorAll('[data-logout]').forEach((button) => button.addEventListener('click', () => {
   CyberSahayComplaints.logout();
-  window.location.href = 'login.html';
+  window.location.href = 'index.html';
 }));
 
 const complaintsContainer = document.getElementById('complaints');
