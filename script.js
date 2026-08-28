@@ -32,8 +32,8 @@ if (form && !form.closest('[data-report-flow]')) {
       save();
       if (current === fields.length - 1) {
         const report = JSON.parse(localStorage.getItem('cyberSahayReport'));
-        report.complaintId = `CS-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
-        localStorage.setItem('cyberSahayReport', JSON.stringify(report));
+        const saved = CyberSahayComplaints.post({ type: 'financial_fraud', label: 'Financial fraud', ...report });
+        localStorage.setItem('cyberSahayReport', JSON.stringify({ ...saved, complaintId: saved.id }));
         window.location.href = 'confirmation.html';
       } else { current += 1; showStep(); }
     }
