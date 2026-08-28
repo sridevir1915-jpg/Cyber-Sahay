@@ -32,6 +32,7 @@ if (form && !form.closest('[data-report-flow]')) {
       save();
       if (current === fields.length - 1) {
         const report = JSON.parse(localStorage.getItem('cyberSahayReport'));
+        if (!CyberSahayComplaints.getAccount()) { window.location.href = 'login.html'; return; }
         const saved = CyberSahayComplaints.post({ type: 'financial_fraud', label: 'Financial fraud', ...report });
         localStorage.setItem('cyberSahayReport', JSON.stringify({ ...saved, complaintId: saved.id }));
         window.location.href = 'confirmation.html';
@@ -75,10 +76,59 @@ if (flow) {
     if (event.target.matches('[data-submit]')) {
       if (document.getElementById('otp').value !== '123456') { document.getElementById('otp-error').hidden = false; return; }
       const data = Object.fromEntries(new FormData(form));
+      if (!CyberSahayComplaints.getAccount()) { window.location.href = '../../login.html'; return; }
       const saved = CyberSahayComplaints.post({ type, label: data.harassmentKind || data.issueType, ...data });
       localStorage.setItem('cyberSahayReport', JSON.stringify({ ...saved, complaintId: saved.id }));
       window.location.href = '../../confirmation.html';
     }
   });
   show();
+}
+
+
+const loginForm = document.getElementById('login-form');
+if (loginForm) {
+  loginForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const data = new FormData(loginForm);
+    const identifier = data.get('identifier').trim();
+    const pin = data.get('pin').trim();
+    if (CyberSahayComplaints.login(identifier, pin)) window.location.href = 'status.html';
+    else document.getElementById('login-error').hidden = false;
+  });
+}
+
+document.querySelectorAll('[data-logout]').forEach((button) => button.addEventListener('click', () => {
+  CyberSahayComplaints.logout();
+  window.location.href = 'login.html';
+}));
+
+const complaintsContainer = document.getElementById('complaints');
+if (complaintsContainer) {
+  const account = CyberSahayComplaints.getAccount();
+  if (!account) window.location.href = 'login.html';
+  else {
+    document.getElementById('status-intro').textContent = `${account.name}'s demo complaints, saved in this browser.`;
+    const stages = [
+      ['Filed', 'Your report was received.'],
+      ['Under Review', 'A team is checking the details you shared.'],
+      ['Forwarded to Bank/Police', 'The right team has been asked to look into it.'],
+      ['Action Taken', 'You can see the outcome or next steps here.']
+    ];
+    complaintsContainer.replaceChildren(...CyberSahayComplaints.get().map((complaint) => {
+      const card = document.createElement('article'); card.className = 'card complaint';
+      const title = document.createElement('h2'); title.textContent = complaint.id;
+      const meta = document.createElement('p'); meta.className = 'complaint-meta'; meta.textContent = `${complaint.label} · Filed ${complaint.filed}`;
+      const tracker = document.createElement('div'); tracker.className = 'tracker';
+      stages.forEach(([titleText, detail], index) => {
+        const isDone = index < complaint.status || complaint.status === 3 && index === 3;
+        const stage = document.createElement('div'); stage.className = `stage ${isDone ? 'done' : index === complaint.status ? 'current' : ''}`;
+        stage.innerHTML = `<span class="dot">${isDone ? '✓' : ''}</span><div><div class="stage-title"></div><p></p></div>`;
+        stage.querySelector('.stage-title').textContent = titleText;
+        stage.querySelector('p').textContent = detail;
+        tracker.append(stage);
+      });
+      card.append(title, meta, tracker); return card;
+    }));
+  }
 }
